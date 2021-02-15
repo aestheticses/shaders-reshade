@@ -3,7 +3,7 @@ several shaders for reshade 4
 
 MMBR is short of MouseMotionBlur, Ashader which can blurs moving things.
 totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).
-it's running based on QUINT shaders, but written by Aestheticses.
+it relies on QUINT shaders, but written by Aestheticses.
 only works when be upper than ADOF shaders.
 
 some statements benefit from qUINT shader “ADOF” . 
