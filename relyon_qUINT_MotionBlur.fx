@@ -3,7 +3,7 @@
 	ReShade 4 effect file
     github.com/-
 	
-	Base on "qUINT_common.fxh" 2.0.2
+	rely on "qUINT_common.fxh" 2.0.2
 	
    	
     by owner of aestheticses@gmail.com
