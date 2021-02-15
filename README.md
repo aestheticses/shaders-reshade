@@ -14,5 +14,6 @@ If it didn't work, try to remove (1- color.alpha).
 
 "float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+0.92) ) * (1-centerTap.a);"
 	//(1-centerTap.a) only work with Assassins Creed Odyssey"
+	
 "currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a); "
 	//(1-currentTap.a) only work with Assassins Creed Odyssey"
