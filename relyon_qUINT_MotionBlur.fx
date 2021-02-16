@@ -62,6 +62,14 @@ uniform float HorizonY <
     ui_tooltip = "Distance from Up Boundary of Screen";
 > = 0.3;
 
+uniform float depthfadestart <
+    ui_type = "slider";
+    ui_min = -0.9;
+    ui_max = 1.0;
+    ui_label = "depth fade start";
+    ui_tooltip = "Distance from Up Boundary of Screen";
+> = 0.95;
+
 uniform bool  EyeForecasting <
     ui_type = "bool";
     ui_label = "Enable Eye-Forecasting";
@@ -166,58 +174,6 @@ void PS_CopyMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0)
     VMouse = tex2D(sMMBR_MBlurTex,1);
 }
 
-void PS_MotionBlur(in MMBR_VSOUT IN, out float4 color : SV_Target0)
-{
-	float4 centerTap = tex2D(sMBCommonTex0, IN.txcoord.xy);
-    //float CoC = 1;
-
-	float4 mouseV = tex2D(sMMBR_MBlurTex, 1)/QualityOfBlur;
-	float  ivo=sqrt(dot(mouseV.xy,mouseV.xy));
-	float  iv= 15*sin(min(ivo*2,1.5708))* QualityOfBlur;
-	
-	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+0.92) ) * (1-centerTap.a);
-	float nSteps 		= iv /rsqrt(max(depth-0.02,0))-MinMouseSpeed ;
-	float expCoeff 		= -2.0 / (nSteps * nSteps + 1e-3); //sigma adjusted for blur width
-
-
-	float4 gaussianSum = 0.0;
-	float  gaussianSumWeight = 1e-5;
-
-	float4 stepV;
- 		stepV.xy = mouseV.xy *rsqrt(ivo+8)   / 400 ;
- 		
- 		float stx =IN.txcoord.x-0.5;
- 		float sty =(IN.txcoord.y-HorizonY);
- 		
-		 stepV *= saturate(abs(stx)*3+abs(sty)*2+0.4);
- 		
- 		
- 		
- 		//stepV.x = stepV.x *(1 / pow( cos(stx),2) );
- 		stepV.x = stepV.x *(1.4*pow(stx,4) + 0.7*stx*stx +1)  + stx*stepV.y *(0.8*pow(sty,5)+0.8*pow(sty,3)+sty)*1.2;
- 		
- 		stepV.y = stepV.y *(1.4*pow(sty,4) + 0.7*sty*sty +1)  + sty*stepV.x *(0.8*pow(stx,5)+0.8*pow(stx,3)+stx)*1.2;
-
-	for(float iStep = -nSteps-0.7; iStep <= nSteps*1.2; iStep++)
-	{
-		float currentWeight = exp((iStep+nSteps/2) * iStep * expCoeff);
-		float currentOffset = 2.0 * iStep - 0.5; //Sample between texels to double blur width at no cost
-		float2 currentxy = IN.txcoord.xy + stepV.xy * currentOffset;
-		
-		float4 currentTap = tex2Dlod(sMBCommonTex0, float4(currentxy,0,0));
-		
-		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a); //bleed fix
-		currentWeight *= saturate(log(qUINT::linear_depth(currentxy)*10+0.92));
-		gaussianSum += currentTap * currentWeight;
-		gaussianSumWeight += currentWeight;
-	}
-
-	gaussianSum /= gaussianSumWeight;
-
-	color.rgb = lerp(centerTap.rgb, gaussianSum.rgb, saturate(gaussianSumWeight/(0.003+gaussianSumWeight)));
-    color.a = 1;
-}
-
 void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 {
 	float4 centerTap = tex2D(sMBCommonTex0, IN.txcoord.xy);
@@ -227,7 +183,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 	float  ivo=sqrt(dot(mouseV.xy,mouseV.xy));
 	float  iv= 15*sin(min(ivo*2,1.5708))* QualityOfBlur;
 	
-	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+0.92) ) * (1-centerTap.a);
+	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+depthfadestart) ) * (1-centerTap.a);
 	//(1-centerTap.a) only work with Assassins Creed Odyssey
 
 	float nSteps 		= iv /rsqrt(max(depth-0.02,0))-MinMouseSpeed ;
@@ -269,7 +225,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a); 
 		//(1-currentTap.a) only work with Assassins Creed Odyssey
 
-		currentWeight *= saturate(log(qUINT::linear_depth(currentxy)*10+0.92));
+		currentWeight *= saturate(log(qUINT::linear_depth(currentxy)*10+depthfadestart));
 		if (EyeForecasting)
 		currentWeight *= saturate(abs(currentxy.x-0.5+efcMouseSpeed)+abs(currentxy.y-HorizonY)+0.1);
 		
