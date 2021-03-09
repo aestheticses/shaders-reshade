@@ -1,5 +1,4 @@
 /*=============================================================================
-
 	ReShade 4 effect file
     github.com/-
 	
@@ -8,9 +7,7 @@
    	
     by owner of aestheticses@gmail.com
     
-
  
-
 =============================================================================*/
 
 /*=============================================================================
@@ -183,7 +180,12 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 	float  ivo=sqrt(dot(mouseV.xy,mouseV.xy));
 	float  iv= 15*sin(min(ivo*2,1.5708))* QualityOfBlur;
 	
-	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+depthfadestart) ) * (1-centerTap.a);
+	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+depthfadestart) ) ;
+	
+		 float stx =IN.txcoord.x-0.5;
+ 		float sty =(IN.txcoord.y-HorizonY);
+ 		float nearblur=saturate(0.5*(abs(stx)-0.12));
+	depth = lerp(depth,1.0,nearblur) * saturate(1-centerTap.a*1.1);
 	//(1-centerTap.a) only work with Assassins Creed Odyssey
 
 	float nSteps 		= iv /rsqrt(max(depth-0.02,0))-MinMouseSpeed ;
@@ -196,10 +198,6 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 	float4 stepV;
  		stepV.xy = mouseV.xy *rsqrt(ivo+8)   / 400 ;
  		
- 		
- 		
- 		float stx =IN.txcoord.x-0.5;
- 		float sty =(IN.txcoord.y-HorizonY);
  		float efcMouseSpeed=0.2*sin(max(min(mouseV.x*1.5,1.5708),-1.5708));
 		 
 		if (EyeForecasting)
@@ -210,9 +208,9 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
  		
  		
  		//stepV.x = stepV.x *(1 / pow( cos(stx),2) );
- 		stepV.x = stepV.x *(1.4*pow(stx,4) + 0.7*stx*stx +1)  + stx*stepV.y *(0.8*pow(sty,5)+0.8*pow(sty,3)+sty)*1.2;
+ 		stepV.x = stepV.x *(1.4*pow(stx,4) + 0.7*stx*stx +1)  + stx*stepV.y *(0.8*pow(sty,5)+0.8*pow(sty,3)+sty)*2;
  		
- 		stepV.y = stepV.y *(1.4*pow(sty,4) + 0.7*sty*sty +1)  + sty*stepV.x *(0.8*pow(stx,5)+0.8*pow(stx,3)+stx)*1.2;
+ 		stepV.y = stepV.y *(1.4*pow(sty,4) + 0.7*sty*sty +1)  + sty*stepV.x *(0.8*pow(stx,5)+0.8*pow(stx,3)+stx)*4;
 
 	for(float iStep = -nSteps-0.7; iStep <= nSteps*1.2; iStep++)
 	{
@@ -222,10 +220,10 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 		
 		float4 currentTap = tex2Dlod(sMBCommonTex0, float4(currentxy,0,0));
 		
-		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a); 
+		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a*1.1); 
 		//(1-currentTap.a) only work with Assassins Creed Odyssey
-
-		currentWeight *= saturate(log(qUINT::linear_depth(currentxy)*10+depthfadestart));
+		float depthweight = saturate(log(qUINT::linear_depth(currentxy)*10+depthfadestart));
+		currentWeight *= lerp(depthweight,1.0,nearblur);
 		if (EyeForecasting)
 		currentWeight *= saturate(abs(currentxy.x-0.5+efcMouseSpeed)+abs(currentxy.y-HorizonY)+0.1);
 		
