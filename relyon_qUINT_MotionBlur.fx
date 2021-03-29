@@ -2,7 +2,7 @@
 	ReShade 4 effect file
     github.com/-
 	
-	rely on "qUINT_common.fxh" 2.0.2
+	
 	
    	
     by owner of aestheticses@gmail.com
@@ -245,7 +245,7 @@ technique MouseMotionBlur
 < ui_tooltip = "                         >> MMBR <<\n\n"
                "MMBR is a shader which can blurs moving things.\n"
                "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n"
-	           "it relies on QUINT shaders, but written by Aestheticses.\n"
+	           "it relies on ？, but written by Aestheticses.\n"
                "only works when be upper than ADOF shaders.\n";
                >
 {
