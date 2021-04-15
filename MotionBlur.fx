@@ -236,7 +236,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 	gaussianSum /= gaussianSumWeight;
 
 	color.rgb = lerp(centerTap.rgb, gaussianSum.rgb, saturate(gaussianSumWeight/(0.003+gaussianSumWeight)));
-    color.a = 1;
+    color.a = centerTap.a;
 }
 
 /*=============================================================================
