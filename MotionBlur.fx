@@ -244,7 +244,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 =============================================================================*/
 
 technique MouseMotionBlur
-< ui_tooltip = "                         >> MMBR <<\n\n"
+< ui_tooltip = "                         >> MMBR V1.0<<\n\n"
                "MMBR is a shader which can blurs moving things.\n"
                "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n"
                "only works when it be upper than Anything.\n";
