@@ -65,6 +65,13 @@ uniform bool  EyeForecasting <
     ui_label = "Enable Eye-Forecasting";
     ui_tooltip = "When mouse is moving left, Less Blur appears on left.";
 > = true;
+
+uniform bool  MaskUI <
+    ui_type = "bool";
+    ui_label = "Try to unmask UI";
+    ui_tooltip = "choose ON when play Asassin's Creed Odyssey";
+> = false;
+
 /*=============================================================================
 	Textures, Samplers, Globals
 =============================================================================*/
@@ -165,6 +172,9 @@ void PS_CopyMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0)
 
 void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 {
+
+    float nmaskui = 0;
+    if (MaskUI) nmaskui = 1.1;
 	float4 centerTap = tex2D(sMBCommonTex0, IN.txcoord.xy);
     //float CoC = 1;
 
@@ -177,7 +187,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 		 float stx =IN.txcoord.x-0.5;
  		float sty =(IN.txcoord.y-HorizonY);
  		float nearblur=saturate(0.5*(abs(stx)-0.12));
-	depth = lerp(depth,1.0,nearblur) * saturate(1-centerTap.a*1.1);
+	depth = lerp(depth,1.0,nearblur) * saturate(1-centerTap.a*nmaskui);
 	//(1-centerTap.a) only work with Assassins Creed Odyssey
 
 	float nSteps 		= iv /rsqrt(max(depth-0.02,0))-MinMouseSpeed ;
@@ -212,7 +222,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 		
 		float4 currentTap = tex2Dlod(sMBCommonTex0, float4(currentxy,0,0));
 		
-		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a*1.1); 
+		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a*nmaskui); 
 		//(1-currentTap.a) only work with Assassins Creed Odyssey
 		float depthweight = saturate(log(ReShade::GetLinearizedDepth(currentxy)*10+depthfadestart));
 		currentWeight *= lerp(depthweight,1.0,nearblur);
@@ -234,7 +244,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 =============================================================================*/
 
 technique MouseMotionBlur
-< ui_tooltip = "                         >> MMBR V1.0<\n\n"
+< ui_tooltip = "                         >> MMBR <<\n\n"
                "MMBR is a shader which can blurs moving things.\n"
                "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n"
                "only works when it be upper than Anything.\n";
