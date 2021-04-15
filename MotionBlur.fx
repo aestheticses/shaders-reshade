@@ -76,8 +76,6 @@ uniform bool  MaskUI <
 	Textures, Samplers, Globals
 =============================================================================*/
 
-#define RESHADE_QUINT_COMMON_VERSION_REQUIRE    202
-
 #include "ReShade.fxh"
 
 
