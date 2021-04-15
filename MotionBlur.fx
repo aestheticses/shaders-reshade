@@ -1,22 +1,15 @@
 /*=============================================================================
 	ReShade 4 effect file
-    github.com/-
-	
-	
-	
-   	
+    github.com/aestheticses/shaders-reshade
+
     by owner of aestheticses@gmail.com
-    
- 
 =============================================================================*/
 
 /*=============================================================================
 	Preprocessor settings
 =============================================================================*/
 
-
 	uniform float2 MouseCoords < source = "mousepoint"; >;
-
 
 /*=============================================================================
 	UI Uniforms
@@ -78,8 +71,7 @@ uniform bool  EyeForecasting <
 
 #define RESHADE_QUINT_COMMON_VERSION_REQUIRE    202
 
-#include "qUINT_common.fxh"
-
+#include "ReShade.fxh"
 
 
 texture2D MMBR_MBlurTex 	    { Width = 1;   Height = 1;   Format = RGBA16f; };
@@ -135,7 +127,7 @@ MMBR_VSOUT VS_MMBR(in uint id : SV_VertexID)
 
 void PS_CopyBackBuffer(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 {
-    color = tex2D(qUINT::sBackBufferTex, IN.txcoord.xy);
+    color = tex2D(ReShade::BackBuffer, IN.txcoord.xy);
 }
 
 void PS_ReadMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0, out float4 color : SV_Target1, out float4 depth : SV_Target2)
@@ -161,9 +153,9 @@ void PS_ReadMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0, out float4 c
 	
 	 VMouse.xy = lerp(VMousexy,VMousexypre,SmoothSpeed);
 	
-    color=tex2D(qUINT::sBackBufferTex, IN.txcoord.xy);
+    color=tex2D(ReShade::BackBuffer, IN.txcoord.xy);
     
-	depth = qUINT::linear_depth(IN.txcoord.xy) * RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
+	depth = ReShade::GetLinearizedDepth(IN.txcoord.xy) * RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 }
 
 void PS_CopyMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0)
@@ -180,7 +172,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 	float  ivo=sqrt(dot(mouseV.xy,mouseV.xy));
 	float  iv= 15*sin(min(ivo*2,1.5708))* QualityOfBlur;
 	
-	float depth = saturate(log(qUINT::linear_depth(IN.txcoord.xy)*10+depthfadestart) ) ;
+	float depth = saturate(log(ReShade::GetLinearizedDepth(IN.txcoord.xy)*10+depthfadestart) ) ;
 	
 		 float stx =IN.txcoord.x-0.5;
  		float sty =(IN.txcoord.y-HorizonY);
@@ -222,7 +214,7 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 		
 		currentWeight *= (0.055 + max(currentTap.r+currentTap.g+currentTap.b-2.4,0))* saturate(1-currentTap.a*1.1); 
 		//(1-currentTap.a) only work with Assassins Creed Odyssey
-		float depthweight = saturate(log(qUINT::linear_depth(currentxy)*10+depthfadestart));
+		float depthweight = saturate(log(ReShade::GetLinearizedDepth(currentxy)*10+depthfadestart));
 		currentWeight *= lerp(depthweight,1.0,nearblur);
 		if (EyeForecasting)
 		currentWeight *= saturate(abs(currentxy.x-0.5+efcMouseSpeed)+abs(currentxy.y-HorizonY)+0.1);
@@ -242,11 +234,10 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 =============================================================================*/
 
 technique MouseMotionBlur
-< ui_tooltip = "                         >> MMBR <<\n\n"
+< ui_tooltip = "                         >> MMBR V1.0<\n\n"
                "MMBR is a shader which can blurs moving things.\n"
                "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n"
-	           "it relies on ？, but written by Aestheticses.\n"
-               "only works when be upper than ADOF shaders.\n";
+               "only works when it be upper than Anything.\n";
                >
 {
 
