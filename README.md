@@ -9,7 +9,7 @@ only works when be upper than ADOF shaders.
 
 
 
-the code is working with Assassin's Creed  Odyssey.
+the code is tested on Assassin's Creed  Odyssey.
 If it didn't work, try to remove (1- color.alpha).
 
 
