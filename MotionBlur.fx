@@ -18,7 +18,7 @@
 uniform float BlurAmount <
     ui_type = "slider";
     ui_min = 0.3;
-    ui_max = 1.7;
+    ui_max = 2.0;
     ui_label = "Blur Amount";
 > = 1;
 
@@ -137,25 +137,18 @@ void PS_CopyBackBuffer(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 
 void PS_ReadMBlur(in MMBR_VSOUT IN, out float4 VMouse : SV_Target0, out float4 color : SV_Target1, out float4 depth : SV_Target2)
 {
-    VMouse.zw = min(max(float2(1,1),MouseCoords),float2(BUFFER_WIDTH-1,BUFFER_HEIGHT-1));/// qUINT::PIXEL_SIZE.xy;
-    float2 VMousexy=(tex2D(sMMBR_MBlurTexPrev, 1).zw - VMouse.zw)/18*BlurAmount;
+    VMouse.zw = min(max(float2(BUFFER_WIDTH*0.01,BUFFER_HEIGHT*0.01),MouseCoords),float2(BUFFER_WIDTH*0.99,BUFFER_HEIGHT*0.99));
+ 
+	float2 VMousexy=(tex2D(sMMBR_MBlurTexPrev, 1).zw - VMouse.zw)/18*BlurAmount;
     float2 VMousexypre=tex2D(sMMBR_MBlurTexPrev, 0.5).xy;
     
-     
-    /* 
-     
-    float2 VMousexydlay2 = 0.4*VMousexy+0.6*VMousexypre;
     
-    float2 VMousexydlay1 =0.5*VMousexy+0.5*VMousexypre;
-    
-    VMouse.xy = max(abs(VMousexydlay1),abs(VMousexydlay2));
-    
-    if (VMousexydlay1.x < 0) 
-	{ VMouse.x= -VMouse.x;}
-    
-    if (VMousexydlay1.y < 0) 
-	{ VMouse.y= -VMouse.y;}*/
-	
+//try to adjust a game that always reset mouse-position.
+	float2 if00=VMouse.zw-float2(BUFFER_WIDTH/2,BUFFER_HEIGHT/2);
+    float distrct0=(BUFFER_HEIGHT+BUFFER_WIDTH)*0.0002;
+
+	if (if00.x > 0-distrct0 && if00.x < distrct0 && if00.y > 0-distrct0 && if00.y < distrct0) VMousexy=VMousexypre*0.7;
+
 	 VMouse.xy = lerp(VMousexy,VMousexypre,SmoothSpeed);
 	
     color=tex2D(ReShade::BackBuffer, IN.txcoord.xy);
@@ -174,7 +167,6 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
     float nmaskui = 0;
     if (MaskUI) nmaskui = 1.1;
 	float4 centerTap = tex2D(sMBCommonTex0, IN.txcoord.xy);
-    //float CoC = 1;
 
 	float4 mouseV = tex2D(sMMBR_MBlurTex, 1)/QualityOfBlur;
 	float  ivo=sqrt(dot(mouseV.xy,mouseV.xy));
@@ -242,10 +234,9 @@ void PS_MotionBlurEFC(in MMBR_VSOUT IN, out float4 color : SV_Target0)
 =============================================================================*/
 
 technique MouseMotionBlur
-< ui_tooltip = "                         >> MMBR V1.0<<\n\n"
+< ui_tooltip = "                         >> MMBR V1.1<<\n\n"
                "MMBR is a shader which can blurs moving things.\n"
-               "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n"
-               "only works when it be upper than Anything.\n";
+               "totally based on mouse moving, it didn't effects on moving that caused by runing(WASD).\n";
                >
 {
 
